@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2017-2018 The PIVX developers
-// Copyright (c) 2018 The LogisCoin developers
+// Copyright (c) 2018 The BlacerCoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -53,7 +53,7 @@ using namespace std;
 using namespace libzerocoin;
 
 #if defined(NDEBUG)
-#error "LogisCoin cannot be compiled without assertions."
+#error "BlacerCoin cannot be compiled without assertions."
 #endif
 
 /**
@@ -951,16 +951,16 @@ bool ContextualCheckZerocoinMint(const CTransaction& tx, const PublicCoin& coin,
 
 bool ContextualCheckZerocoinSpend(const CTransaction& tx, const CoinSpend& spend, CBlockIndex* pindex, const uint256& hashBlock)
 {
-    //Check to see if the zLGS is properly signed
+    //Check to see if the zBLCR is properly signed
     if (pindex->nHeight >= Params().Zerocoin_Block_V2_Start()) {
         if (!spend.HasValidSignature())
-            return error("%s: V2 zLGS spend does not have a valid signature", __func__);
+            return error("%s: V2 zBLCR spend does not have a valid signature", __func__);
 
         libzerocoin::SpendType expectedType = libzerocoin::SpendType::SPEND;
         if (tx.IsCoinStake())
             expectedType = libzerocoin::SpendType::STAKE;
         if (spend.getSpendType() != expectedType) {
-            return error("%s: trying to spend zLGS without the correct spend type. txid=%s", __func__,
+            return error("%s: trying to spend zBLCR without the correct spend type. txid=%s", __func__,
                          tx.GetHash().GetHex());
         }
     }
@@ -968,14 +968,14 @@ bool ContextualCheckZerocoinSpend(const CTransaction& tx, const CoinSpend& spend
     //Reject serial's that are already in the blockchain
     int nHeightTx = 0;
     if (IsSerialInBlockchain(spend.getCoinSerialNumber(), nHeightTx))
-        return error("%s : zLGS spend with serial %s is already in block %d\n", __func__,
+        return error("%s : zBLCR spend with serial %s is already in block %d\n", __func__,
                      spend.getCoinSerialNumber().GetHex(), nHeightTx);
 
     //Reject serial's that are not in the acceptable value range
     bool fUseV1Params = spend.getVersion() < libzerocoin::PrivateCoin::PUBKEY_VERSION;
     if (pindex->nHeight > Params().Zerocoin_Block_EnforceSerialRange() &&
         !spend.HasValidSerial(Params().Zerocoin_Params(fUseV1Params)))
-        return error("%s : zLGS spend with serial %s from tx %s is not in valid range\n", __func__,
+        return error("%s : zBLCR spend with serial %s from tx %s is not in valid range\n", __func__,
                      spend.getCoinSerialNumber().GetHex(), tx.GetHash().GetHex());
 
     return true;
@@ -1283,7 +1283,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState& state, const CTransa
             //Check that txid is not already in the chain
             int nHeightTx = 0;
             if (IsTransactionInChain(tx.GetHash(), nHeightTx))
-                return state.Invalid(error("AcceptToMemoryPool : zLGS spend tx %s already in block %d",
+                return state.Invalid(error("AcceptToMemoryPool : zBLCR spend tx %s already in block %d",
                                            tx.GetHash().GetHex(), nHeightTx), REJECT_DUPLICATE, "bad-txns-inputs-spent");
 
             //Check for double spending of serial #'s
@@ -1321,7 +1321,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState& state, const CTransa
                 }
             }
 
-            // Check that zLGS mints are not already known
+            // Check that zBLCR mints are not already known
             if (tx.IsZerocoinMint()) {
                 for (auto& out : tx.vout) {
                     if (!out.IsZerocoinMint())
@@ -1811,171 +1811,171 @@ int64_t GetBlockValue(int nHeight)
     int64_t nSubsidy = 0;
 
     if (Params().NetworkID() == CBaseChainParams::TESTNET) {
-        if (nHeight < 150 && nHeight > 0)
+        if (nHeight < 200 && nHeight > 0)
             return 10 * COIN;
     }
 
     if (nHeight == 0) {
-        nSubsidy = 197000 * COIN;
+        nSubsidy = 798000 * COIN;
     }
     else if (nHeight < 10000 && nHeight > 0) {
-        nSubsidy = 1 * COIN;
+        nSubsidy = 0.5 * COIN;
     }
     else if (nHeight <= 19999 && nHeight >= 10000) {
-        nSubsidy = 1.5 * COIN;
+        nSubsidy = 0.75 * COIN;
     }
     else if (nHeight <= 29999 && nHeight >= 20000) {
-        nSubsidy = 2 * COIN;
+        nSubsidy = 0.5 * COIN;
     }
     else if (nHeight <= 39999 && nHeight >= 30000) {
-        nSubsidy = 2.5 * COIN;
+        nSubsidy = 0.75 * COIN;
     }
     else if (nHeight <= 49999 && nHeight >= 40000) {
-        nSubsidy = 3 * COIN;
+        nSubsidy = 1 * COIN;
     }
     else if (nHeight <= 59999 && nHeight >= 50000) {
-        nSubsidy = 3.5 * COIN;
+        nSubsidy = 1.25 * COIN;
     }
     else if (nHeight <= 69999 && nHeight >= 60000) {
-        nSubsidy = 4 * COIN;
+        nSubsidy = 1.5 * COIN;
     }
     else if (nHeight <= 79999 && nHeight >= 70000) {
-        nSubsidy = 4.5 * COIN;
+        nSubsidy = 1.75 * COIN;
     }
     else if (nHeight <= 89999 && nHeight >= 80000) {
-        nSubsidy = 5 * COIN;
+        nSubsidy = 2 * COIN;
     }
     else if (nHeight <= 99999 && nHeight >= 90000) {
-        nSubsidy = 5.5 * COIN;
+        nSubsidy = 2.25 * COIN;
     }
     else if (nHeight <= 109999 && nHeight >= 100000) {
-        nSubsidy = 6 * COIN;
+        nSubsidy = 2.5 * COIN;
     }
     else if (nHeight <= 119999 && nHeight >= 110000) {
-        nSubsidy = 6.5 * COIN;
+        nSubsidy = 2.75 * COIN;
     }
     else if (nHeight <= 129999 && nHeight >= 120000) {
-        nSubsidy = 7 * COIN;
+        nSubsidy = 3 * COIN;
     }
     else if (nHeight <= 139999 && nHeight >= 130000) {
-        nSubsidy = 7.5 * COIN;
+        nSubsidy = 3.25 * COIN;
     }
     else if (nHeight <= 149999 && nHeight >= 140000) {
-        nSubsidy = 8 * COIN;
+        nSubsidy = 3.5 * COIN;
     }
     else if (nHeight <= 159999 && nHeight >= 150000) {
-        nSubsidy = 8.5 * COIN;
+        nSubsidy = 3.75 * COIN;
     }
     else if (nHeight <= 169999 && nHeight >= 160000) {
-        nSubsidy = 9 * COIN;
+        nSubsidy = 4 * COIN;
     }
     else if (nHeight <= 179999 && nHeight >= 170000) {
-        nSubsidy = 8.9 * COIN;
+        nSubsidy = 4.25 * COIN;
     }
     else if (nHeight <= 189999 && nHeight >= 180000) {
-        nSubsidy = 8.8 * COIN;
+        nSubsidy = 4.5 * COIN;
     }
     else if (nHeight <= 199999 && nHeight >= 190000) {
-        nSubsidy = 8.7 * COIN;
+        nSubsidy = 4.75 * COIN;
     }
     else if (nHeight <= 209999 && nHeight >= 200000) {
-        nSubsidy = 8.6 * COIN;
+        nSubsidy = 5 * COIN;
     }
     else if (nHeight <= 219999 && nHeight >= 210000) {
-        nSubsidy = 8.5 * COIN;
+        nSubsidy = 5.25 * COIN;
     }
     else if (nHeight <= 229999 && nHeight >= 220000) {
-        nSubsidy = 8.4 * COIN;
-    }
-    else if (nHeight <= 239999 && nHeight >= 230000) {
-        nSubsidy = 8.3 * COIN;
-    }
-    else if (nHeight <= 249999 && nHeight >= 240000) {
-        nSubsidy = 8.2 * COIN;
-    }
-    else if (nHeight <= 259999 && nHeight >= 250000) {
-        nSubsidy = 8.1 * COIN;
-    }
-    else if (nHeight <= 269999 && nHeight >= 260000) {
-        nSubsidy = 8 * COIN;
-    }
-    else if (nHeight <= 279999 && nHeight >= 270000) {
-        nSubsidy = 7.9 * COIN;
-    }
-    else if (nHeight <= 289999 && nHeight >= 280000) {
-        nSubsidy = 7.8 * COIN;
-    }
-    else if (nHeight <= 299999 && nHeight >= 290000) {
-        nSubsidy = 7.7 * COIN;
-    }
-    else if (nHeight <= 309999 && nHeight >= 300000) {
-        nSubsidy = 7.6 * COIN;
-    }
-    else if (nHeight <= 319999 && nHeight >= 310000) {
-        nSubsidy = 7.5 * COIN;
-    }
-    else if (nHeight <= 329999 && nHeight >= 320000) {
-        nSubsidy = 7.4 * COIN;
-    }
-    else if (nHeight <= 339999 && nHeight >= 330000) {
-        nSubsidy = 7.3 * COIN;
-    }
-    else if (nHeight <= 349999 && nHeight >= 340000) {
-        nSubsidy = 7.2 * COIN;
-    }
-    else if (nHeight <= 359999 && nHeight >= 350000) {
-        nSubsidy = 7.1 * COIN;
-    }
-    else if (nHeight <= 369999 && nHeight >= 360000) {
-        nSubsidy = 7 * COIN;
-    }
-    else if (nHeight <= 379999 && nHeight >= 370000) {
-        nSubsidy = 6.9 * COIN;
-    }
-    else if (nHeight <= 389999 && nHeight >= 380000) {
-        nSubsidy = 6.8 * COIN;
-    }
-    else if (nHeight <= 399999 && nHeight >= 390000) {
-        nSubsidy = 6.7 * COIN;
-    }
-    else if (nHeight <= 409999 && nHeight >= 400000) {
-        nSubsidy = 6.6 * COIN;
-    }
-    else if (nHeight <= 419999 && nHeight >= 410000) {
-        nSubsidy = 6.5 * COIN;
-    }
-    else if (nHeight <= 429999 && nHeight >= 420000) {
-        nSubsidy = 6.4 * COIN;
-    }
-    else if (nHeight <= 439999 && nHeight >= 430000) {
-        nSubsidy = 6.3 * COIN;
-    }
-    else if (nHeight <= 449999 && nHeight >= 440000) {
-        nSubsidy = 6.2 * COIN;
-    }
-    else if (nHeight <= 459999 && nHeight >= 450000) {
-        nSubsidy = 6.1 * COIN;
-    }
-    else if (nHeight <= 469999 && nHeight >= 460000) {
-        nSubsidy = 6 * COIN;
-    }
-    else if (nHeight <= 479999 && nHeight >= 470000) {
-        nSubsidy = 5.9 * COIN;
-    }
-    else if (nHeight <= 489999 && nHeight >= 480000) {
-        nSubsidy = 5.8 * COIN;
-    }
-    else if (nHeight <= 499999 && nHeight >= 490000) {
-        nSubsidy = 5.7 * COIN;
-    }
-    else if (nHeight <= 509999 && nHeight >= 500000) {
-        nSubsidy = 5.6 * COIN;
-    }
-    else if (nHeight <= 519999 && nHeight >= 510000) {
         nSubsidy = 5.5 * COIN;
     }
-    else if (nHeight >= 520000) {
+    else if (nHeight <= 239999 && nHeight >= 230000) {
+        nSubsidy = 5.75 * COIN;
+    }
+    else if (nHeight <= 249999 && nHeight >= 240000) {
+        nSubsidy = 6 * COIN;
+    }
+    else if (nHeight <= 259999 && nHeight >= 250000) {
+        nSubsidy = 6.25 * COIN;
+    }
+    else if (nHeight <= 269999 && nHeight >= 260000) {
+        nSubsidy = 6.5 * COIN;
+    }
+    else if (nHeight <= 279999 && nHeight >= 270000) {
+        nSubsidy = 6.4 * COIN;
+    }
+    else if (nHeight <= 289999 && nHeight >= 280000) {
+        nSubsidy = 6.3 * COIN;
+    }
+    else if (nHeight <= 299999 && nHeight >= 290000) {
+        nSubsidy = 6.2 * COIN;
+    }
+    else if (nHeight <= 309999 && nHeight >= 300000) {
+        nSubsidy = 6.1 * COIN;
+    }
+    else if (nHeight <= 319999 && nHeight >= 310000) {
+        nSubsidy = 6 * COIN;
+    }
+    else if (nHeight <= 329999 && nHeight >= 320000) {
+        nSubsidy = 5.9 * COIN;
+    }
+    else if (nHeight <= 339999 && nHeight >= 330000) {
+        nSubsidy = 5.8 * COIN;
+    }
+    else if (nHeight <= 349999 && nHeight >= 340000) {
+        nSubsidy = 5.7 * COIN;
+    }
+    else if (nHeight <= 359999 && nHeight >= 350000) {
+        nSubsidy = 5.6 * COIN;
+    }
+    else if (nHeight <= 369999 && nHeight >= 360000) {
+        nSubsidy = 5.5 * COIN;
+    }
+    else if (nHeight <= 379999 && nHeight >= 370000) {
+        nSubsidy = 5.4 * COIN;
+    }
+    else if (nHeight <= 389999 && nHeight >= 380000) {
+        nSubsidy = 5.3 * COIN;
+    }
+    else if (nHeight <= 399999 && nHeight >= 390000) {
+        nSubsidy = 5.2 * COIN;
+    }
+    else if (nHeight <= 409999 && nHeight >= 400000) {
+        nSubsidy = 5.1 * COIN;
+    }
+    else if (nHeight <= 419999 && nHeight >= 410000) {
         nSubsidy = 5 * COIN;
+    }
+    else if (nHeight <= 429999 && nHeight >= 420000) {
+        nSubsidy = 4.9 * COIN;
+    }
+    else if (nHeight <= 439999 && nHeight >= 430000) {
+        nSubsidy = 4.8 * COIN;
+    }
+    else if (nHeight <= 449999 && nHeight >= 440000) {
+        nSubsidy = 4.7 * COIN;
+    }
+    else if (nHeight <= 459999 && nHeight >= 450000) {
+        nSubsidy = 4.6 * COIN;
+    }
+    else if (nHeight <= 469999 && nHeight >= 460000) {
+        nSubsidy = 4.5 * COIN;
+    }
+    else if (nHeight <= 479999 && nHeight >= 470000) {
+        nSubsidy = 4.4 * COIN;
+    }
+    else if (nHeight <= 489999 && nHeight >= 480000) {
+        nSubsidy = 4.3 * COIN;
+    }
+    else if (nHeight <= 499999 && nHeight >= 490000) {
+        nSubsidy = 4.2 * COIN;
+    }
+    else if (nHeight <= 509999 && nHeight >= 500000) {
+        nSubsidy = 4.1 * COIN;
+    }
+    else if (nHeight <= 519999 && nHeight >= 510000) {
+        nSubsidy = 4.0 * COIN;
+    }
+    else if (nHeight >= 520000) {
+        nSubsidy = 3.5 * COIN;
     }
     else {
         nSubsidy = 0 * COIN;
@@ -1983,85 +1983,23 @@ int64_t GetBlockValue(int nHeight)
     return nSubsidy;
 }
 
-int64_t GetMasternodePayment(int nHeight, int64_t blockValue, int nMasternodeCount, bool isZLGSStake)
+int64_t GetMasternodePayment(int nHeight, int64_t blockValue, int nMasternodeCount, bool isZLRMStake)
 {
     int64_t ret = 0;
 
     if (Params().NetworkID() == CBaseChainParams::TESTNET) {
-        if (nHeight < 150)
+        if (nHeight < 200)
             return 0;
     }
 
     if (nHeight < 10000) {
-        ret = blockValue * 0.90;
-    }
-    else if (nHeight <= 19999 && nHeight >= 10000) {
         ret = blockValue * 0.80;
     }
-    else if (nHeight <= 29999 && nHeight >= 20000) {
-        ret = blockValue * 0.805;
-    }
-    else if (nHeight <= 39999 && nHeight >= 30000) {
-        ret = blockValue * 0.81;
-    }
-    else if (nHeight <= 49999 && nHeight >= 40000) {
-        ret = blockValue * 0.815;
-    }
-    else if (nHeight <= 59999 && nHeight >= 50000) {
-        ret = blockValue * 0.82;
-    }
-    else if (nHeight <= 69999 && nHeight >= 60000) {
-        ret = blockValue * 0.825;
-    }
-    else if (nHeight <= 79999 && nHeight >= 70000) {
-        ret = blockValue * 0.83;
-    }
-    else if (nHeight <= 89999 && nHeight >= 80000) {
-        ret = blockValue * 0.835;
-    }
-    else if (nHeight <= 99999 && nHeight >= 90000) {
-        ret = blockValue * 0.84;
-    }
-    else if (nHeight <= 109999 && nHeight >= 100000) {
-        ret = blockValue * 0.845;
-    }
-    else if (nHeight <= 119999 && nHeight >= 110000) {
-        ret = blockValue * 0.85;
-    }
-    else if (nHeight <= 129999 && nHeight >= 120000) {
-        ret = blockValue * 0.855;
-    }
-    else if (nHeight <= 139999 && nHeight >= 130000) {
-        ret = blockValue * 0.86;
-    }
-    else if (nHeight <= 149999 && nHeight >= 140000) {
-        ret = blockValue * 0.865;
-    }
-    else if (nHeight <= 159999 && nHeight >= 150000) {
-        ret = blockValue * 0.87;
-    }
-    else if (nHeight <= 169999 && nHeight >= 160000) {
-        ret = blockValue * 0.875;
-    }
-    else if (nHeight <= 179999 && nHeight >= 170000) {
-        ret = blockValue * 0.88;
-    }
-    else if (nHeight <= 189999 && nHeight >= 180000) {
-        ret = blockValue * 0.885;
-    }
-    else if (nHeight <= 199999 && nHeight >= 190000) {
-        ret = blockValue * 0.89;
-    }
-    else if (nHeight <= 209999 && nHeight >= 200000) {
-        ret = blockValue * 0.895;
-    }
-    else if (nHeight <= 259999 && nHeight >= 210000) {
-//                      ^^^^^^
-        ret = blockValue * 0.90;
+    else if (nHeight <= 19999 && nHeight >= 10000) {
+        ret = blockValue * 0.5;
     }
     else {
         ret = blockValue * 0.99;
-//                         ^^^^  
     }
     return ret;
 }
@@ -2432,7 +2370,7 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
         const CTransaction& tx = block.vtx[i];
 
         /** UNDO ZEROCOIN DATABASING
-         * note we only undo zerocoin databasing in the following statement, value to and from LogisCoin
+         * note we only undo zerocoin databasing in the following statement, value to and from BlacerCoin
          * addresses should still be handled by the typical bitcoin based undo code
          * */
         if (tx.ContainsZerocoins()) {
@@ -2575,11 +2513,11 @@ static CCheckQueue<CScriptCheck> scriptcheckqueue(128);
 
 void ThreadScriptCheck()
 {
-    RenameThread("logiscoin-scriptch");
+    RenameThread("blacercoin-scriptch");
     scriptcheckqueue.Thread();
 }
 
-void RecalculateZLGSMinted()
+void RecalculateZBLCRMinted()
 {
     CBlockIndex *pindex = chainActive[Params().Zerocoin_StartHeight()];
     int nHeightEnd = chainActive.Height();
@@ -2606,14 +2544,14 @@ void RecalculateZLGSMinted()
     }
 }
 
-void RecalculateZLGSSpent()
+void RecalculateZBLCRSpent()
 {
     CBlockIndex* pindex = chainActive[Params().Zerocoin_StartHeight()];
     while (true) {
         if (pindex->nHeight % 1000 == 0)
             LogPrintf("%s : block %d...\n", __func__, pindex->nHeight);
 
-        //Rewrite zLGS supply
+        //Rewrite zBLCR supply
         CBlock block;
         assert(ReadBlockFromDisk(block, pindex));
 
@@ -2622,13 +2560,13 @@ void RecalculateZLGSSpent()
         //Reset the supply to previous block
         pindex->mapZerocoinSupply = pindex->pprev->mapZerocoinSupply;
 
-        //Add mints to zLGS supply
+        //Add mints to zBLCR supply
         for (auto denom : libzerocoin::zerocoinDenomList) {
             long nDenomAdded = count(pindex->vMintDenominationsInBlock.begin(), pindex->vMintDenominationsInBlock.end(), denom);
             pindex->mapZerocoinSupply.at(denom) += nDenomAdded;
         }
 
-        //Remove spends from zLGS supply
+        //Remove spends from zBLCR supply
         for (auto denom : listDenomsSpent)
             pindex->mapZerocoinSupply.at(denom)--;
 
@@ -2642,7 +2580,7 @@ void RecalculateZLGSSpent()
     }
 }
 
-bool RecalculateLGSSupply(int nHeightStart)
+bool RecalculateBLCRSupply(int nHeightStart)
 {
     if (nHeightStart > chainActive.Height())
         return false;
@@ -2714,7 +2652,7 @@ bool RecalculateLGSSupply(int nHeightStart)
 
 bool ReindexAccumulators(list<uint256>& listMissingCheckpoints, string& strError)
 {
-    // LogisCoin: recalculate Accumulator Checkpoints that failed to database properly
+    // BlacerCoin: recalculate Accumulator Checkpoints that failed to database properly
     if (!listMissingCheckpoints.empty()) {
         uiInterface.ShowProgress(_("Calculating missing accumulators..."), 0);
         LogPrintf("%s : finding missing checkpoints\n", __func__);
@@ -2762,7 +2700,7 @@ bool ReindexAccumulators(list<uint256>& listMissingCheckpoints, string& strError
     return true;
 }
 
-bool UpdateZLGSSupply(const CBlock& block, CBlockIndex* pindex)
+bool UpdateZBLCRSupply(const CBlock& block, CBlockIndex* pindex)
 {
     std::list<CZerocoinMint> listMints;
     bool fFilterInvalid = pindex->nHeight >= Params().Zerocoin_Block_RecalculateAccumulators();
@@ -2941,7 +2879,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                     return state.DoS(100, error("%s: failed to add block %s with invalid zerocoinspend", __func__, tx.GetHash().GetHex()), REJECT_INVALID);
             }
 
-            // Check that zLGS mints are not already known
+            // Check that zBLCR mints are not already known
             if (tx.IsZerocoinMint()) {
                 for (auto& out : tx.vout) {
                     if (!out.IsZerocoinMint())
@@ -2970,7 +2908,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                 }
             }
 
-            // Check that zLGS mints are not already known
+            // Check that zBLCR mints are not already known
             if (tx.IsZerocoinMint()) {
                 for (auto& out : tx.vout) {
                     if (!out.IsZerocoinMint())
@@ -3018,14 +2956,14 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 
     //A one-time event where money supply counts were off and recalculated on a certain block.
     if (pindex->nHeight == Params().Zerocoin_Block_RecalculateAccumulators() + 1) {
-        RecalculateZLGSMinted();
-        RecalculateZLGSSpent();
-        RecalculateLGSSupply(Params().Zerocoin_StartHeight());
+        RecalculateZBLCRMinted();
+        RecalculateZBLCRSpent();
+        RecalculateBLCRSupply(Params().Zerocoin_StartHeight());
     }
 
-    //Track zLGS money supply in the block index
-    if (!UpdateZLGSSupply(block, pindex))
-        return state.DoS(100, error("%s: Failed to calculate new zLGS supply for block=%s height=%d", __func__,
+    //Track zBLCR money supply in the block index
+    if (!UpdateZBLCRSupply(block, pindex))
+        return state.DoS(100, error("%s: Failed to calculate new zBLCR supply for block=%s height=%d", __func__,
                                     block.GetHash().GetHex(), pindex->nHeight), REJECT_INVALID);
 
     // track money supply and mint amount info
@@ -3087,7 +3025,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         setDirtyBlockIndex.insert(pindex);
     }
 
-    //Record zLGS serials
+    //Record zBLCR serials
     set<uint256> setAddedTx;
     for (pair<CoinSpend, uint256> pSpend : vSpends) {
         // Send signal to wallet if this is ours
@@ -3228,7 +3166,7 @@ void static UpdateTip(CBlockIndex* pindexNew)
 {
     chainActive.SetTip(pindexNew);
 
-    // If turned on AutoZeromint will automatically convert LGS to zLGS
+    // If turned on AutoZeromint will automatically convert BLCR to zBLCR
     if (pwalletMain->isZeromintEnabled ())
         pwalletMain->AutoZeromint ();
 
@@ -4069,7 +4007,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
                 nHeight = (*mi).second->nHeight + 1;
         }
 
-        // LogisCoin
+        // BlacerCoin
         // It is entierly possible that we don't have enough data and this could fail
         // (i.e. the block could indeed be valid). Store the block for later consideration
         // but issue an initial reject message.
@@ -4094,13 +4032,13 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
         if (!CheckTransaction(tx, fZerocoinActive, chainActive.Height() + 1 >= Params().Zerocoin_Block_EnforceSerialRange(), state))
             return error("CheckBlock() : CheckTransaction failed");
 
-        // double check that there are no double spent zLGS spends in this block
+        // double check that there are no double spent zBLCR spends in this block
         if (tx.IsZerocoinSpend()) {
             for (const CTxIn txIn : tx.vin) {
                 if (txIn.scriptSig.IsZerocoinSpend()) {
                     libzerocoin::CoinSpend spend = TxInToZerocoinSpend(txIn);
                     if (count(vBlockSerials.begin(), vBlockSerials.end(), spend.getCoinSerialNumber()))
-                        return state.DoS(100, error("%s : Double spending of zLGS serial %s in block\n Block: %s",
+                        return state.DoS(100, error("%s : Double spending of zBLCR serial %s in block\n Block: %s",
                                                     __func__, spend.getCoinSerialNumber().GetHex(), block.ToString()));
                     vBlockSerials.emplace_back(spend.getCoinSerialNumber());
                 }
@@ -4307,21 +4245,21 @@ bool AcceptBlockHeader(const CBlock& block, CValidationState& state, CBlockIndex
 bool ContextualCheckZerocoinStake(int nHeight, CStakeInput* stake)
 {
     if (nHeight < Params().Zerocoin_Block_V2_Start())
-        return error("%s: zLGS stake block is less than allowed start height", __func__);
+        return error("%s: zBLCR stake block is less than allowed start height", __func__);
 
-    if (CZPivStake* zLGS = dynamic_cast<CZPivStake*>(stake)) {
-        CBlockIndex* pindexFrom = zLGS->GetIndexFrom();
+    if (CZPivStake* zBLCR = dynamic_cast<CZPivStake*>(stake)) {
+        CBlockIndex* pindexFrom = zBLCR->GetIndexFrom();
         if (!pindexFrom)
-            return error("%s: failed to get index associated with zLGS stake checksum", __func__);
+            return error("%s: failed to get index associated with zBLCR stake checksum", __func__);
 
         if (chainActive.Height() - pindexFrom->nHeight < Params().Zerocoin_RequiredStakeDepth())
-            return error("%s: zLGS stake does not have required confirmation depth", __func__);
+            return error("%s: zBLCR stake does not have required confirmation depth", __func__);
 
         //The checksum needs to be the exact checksum from 200 blocks ago
         uint256 nCheckpoint200 = chainActive[nHeight - Params().Zerocoin_RequiredStakeDepth()]->nAccumulatorCheckpoint;
-        uint32_t nChecksum200 = ParseChecksum(nCheckpoint200, libzerocoin::AmountToZerocoinDenomination(zLGS->GetValue()));
-        if (nChecksum200 != zLGS->GetChecksum())
-            return error("%s: accumulator checksum is different than the block 200 blocks previous. stake=%d block200=%d", __func__, zLGS->GetChecksum(), nChecksum200);
+        uint32_t nChecksum200 = ParseChecksum(nCheckpoint200, libzerocoin::AmountToZerocoinDenomination(zBLCR->GetValue()));
+        if (nChecksum200 != zBLCR->GetChecksum())
+            return error("%s: accumulator checksum is different than the block 200 blocks previous. stake=%d block200=%d", __func__, zBLCR->GetChecksum(), nChecksum200);
     } else {
         return error("%s: dynamic_cast of stake ptr failed", __func__);
     }
@@ -4371,8 +4309,8 @@ bool AcceptBlock(CBlock& block, CValidationState& state, CBlockIndex** ppindex, 
         if (!stake)
             return error("%s: null stake ptr", __func__);
 
-        if (stake->IsZLGS() && !ContextualCheckZerocoinStake(pindexPrev->nHeight, stake.get()))
-            return state.DoS(100, error("%s: staked zLGS fails context checks", __func__));
+        if (stake->IsZBLCR() && !ContextualCheckZerocoinStake(pindexPrev->nHeight, stake.get()))
+            return state.DoS(100, error("%s: staked zBLCR fails context checks", __func__));
 
         uint256 hash = block.GetHash();
         if(!mapProofOfStake.count(hash)) // add to mapProofOfStake
@@ -4500,7 +4438,7 @@ bool ProcessNewBlock(CValidationState& state, CNode* pfrom, CBlock* pblock, CDis
         }
     }
     if (nMints || nSpends)
-        LogPrintf("%s : block contains %d zLGS mints and %d zLGS spends\n", __func__, nMints, nSpends);
+        LogPrintf("%s : block contains %d zBLCR mints and %d zBLCR spends\n", __func__, nMints, nSpends);
 
     if (!CheckBlockSignature(*pblock))
         return error("ProcessNewBlock() : bad proof-of-stake block signature");
@@ -5536,7 +5474,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             return false;
         }
 
-        // LogisCoin: We use certain sporks during IBD, so check to see if they are
+        // BlacerCoin: We use certain sporks during IBD, so check to see if they are
         // available. If not, ask the first peer connected for them.
         bool fMissingSporks = !pSporkDB->SporkExists(SPORK_14_NEW_PROTOCOL_ENFORCEMENT) &&
                 !pSporkDB->SporkExists(SPORK_15_NEW_PROTOCOL_ENFORCEMENT_2) &&
